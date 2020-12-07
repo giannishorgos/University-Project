@@ -2,11 +2,12 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class HeuristicPlayer extends Player {
     private ArrayList<Integer[]> path;
     private int n;
-    private float movepoints;
+    private double movepoints;
     private int[] supplydistance;
     private int[] minosdistance;
 
@@ -27,11 +28,11 @@ public class HeuristicPlayer extends Player {
     }
     
     public double evaluate(int currentPos, int dice, int minosTile, int n) {
-    	int sum = 0;
+    	double sum = 0;
     	switch( dice){
     	case 0:
     		if( board.tiles[currentPos].isUp()) {
-    			sum -=10;
+    				sum -=2;
     			break;
     		}
     		for( int i=0; i<board.getS(); i++) {
@@ -41,17 +42,17 @@ public class HeuristicPlayer extends Player {
     			}
     		}
     		if( minosTile == currentPos + board.getN()) {
-    			sum -= 5;
+    			sum -= 6;
     			minosdistance[dice] = n;
     		}
         	n++;
         	if( n<4) {
-        		movepoints += evaluate( currentPos + (n-1) * board.getN(), dice, minosTile, n) / (float)n;
+        		movepoints += evaluate( currentPos +  board.getN(), dice, minosTile, n) / (float)n;
         	}
     		break;
     	case 1:
     		if( board.tiles[currentPos].isRight()) {
-    			sum -= 10;
+    			sum -=2;
     			break;
     		}
     		for( int i=0; i<board.getS(); i++) {
@@ -61,17 +62,19 @@ public class HeuristicPlayer extends Player {
     			}
     		}
     		if( minosTile == currentPos + 1) {
-    			sum -= 5;
+    			sum -= 6;
     			minosdistance[dice] = n;
     		}
         	n++;
         	if( n<4) {
-        		movepoints += evaluate( currentPos + (n-1), dice, minosTile, n) / (float)n;
+        		movepoints += evaluate( currentPos + 1, dice, minosTile, n) / (float)n;
         	}
     		break;
     	case 2:
     		if( board.tiles[currentPos].isDown()) {
-    			sum -=10;
+    			if( n==1) {
+    				sum -=2;
+    			}
     			break;
     		}
     		for( int i=0; i<board.getS(); i++) {
@@ -81,17 +84,17 @@ public class HeuristicPlayer extends Player {
     			}
     		}
     		if( minosTile == currentPos - board.getN()) {
-    			sum -= 5;
+    			sum -= 6;
     			minosdistance[dice] = n;
     		}
         	n++;
         	if( n<4) {
-        		movepoints += evaluate( currentPos - (n-1) * board.getN(), dice, minosTile, n) / (float)n;
+        		movepoints += evaluate( currentPos -  board.getN(), dice, minosTile, n) / (float)n;
         	}
     		break;
     	case 3:
     		if( board.tiles[currentPos].isLeft()) {
-    			sum -= 10;
+    			sum -= 2;
     			break;
     		}
     		for( int i=0; i<board.getS(); i++) {
@@ -101,26 +104,55 @@ public class HeuristicPlayer extends Player {
     			}
     		}
     		if( minosTile == currentPos - 1) {
-    			sum -= 5;
+    			sum -= 6;
     			minosdistance[dice] = n;
     		}
         	n++;
         	if( n<4) {
-        		movepoints += evaluate( currentPos - (n-1), dice, minosTile, n) / (float)n;
+        		movepoints += evaluate( currentPos - 1, dice, minosTile, n) / (float)n;
         	}
     		break;
     		
-    	}
-    	return sum;
+    	} 
+    	return sum + movepoints;
     }
     
     public int getNextMove(int currentPos, int minosTile) {
     	Map <String, Double> availableMoves = new HashMap<String, Double>();
     	
+    	movepoints = 0;
     	availableMoves.put("Up", evaluate(currentPos, 0, minosTile, 1));
+    	movepoints = 0;
     	availableMoves.put("Right", evaluate(currentPos, 1, minosTile, 1));
+    	movepoints = 0;
     	availableMoves.put("Down", evaluate(currentPos, 2, minosTile, 1));
+    	movepoints = 0;
     	availableMoves.put("Left", evaluate(currentPos, 3, minosTile, 1));
+    	
+    	//checks if the smae as last move
+    	if( path.size()!=0) {
+    		switch( path.get(path.size() -1)[0]) {
+    		case 0:
+    			availableMoves.replace("Down", availableMoves.get("Down"), availableMoves.get("Down") -1);
+    			break;
+    		case 1: 
+    			availableMoves.replace("Left", availableMoves.get("Left"), availableMoves.get("Left") -1);
+    			break;
+    		case 2:
+    			availableMoves.replace("Up", availableMoves.get("Up"), availableMoves.get("Up") -1);
+    			break;
+    		case 3:
+    			availableMoves.replace("Right", availableMoves.get("Right"), availableMoves.get("Right") -1);
+    			break;
+    		}
+    	}
+    	
+    	System.out.println( "~~~~~~Up value: " + availableMoves.get("Up"));
+    	System.out.println( "~~~~~~Right value: " + availableMoves.get("Right"));
+    	System.out.println( "~~~~~~Donw value: " + availableMoves.get("Down"));
+    	System.out.println( "~~~~~~Left value: " + availableMoves.get("Left"));
+    	
+    	
     	
     	double max=-99999;
     	String key = "";
@@ -141,149 +173,118 @@ public class HeuristicPlayer extends Player {
     		case "Down":
     			path.add(new Integer[] { 2, supplydistance[2]==1 ? 1 : 0, supplydistance[2], minosdistance[2]});
     			return 2;
-    		case "Left":
+    		default:
     			path.add(new Integer[] { 3, supplydistance[3]==1 ? 1 : 0, supplydistance[3], minosdistance[3]});
 				return 3;
     	}
     	
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    /*public double evaluate(int currentPos, int dice, int minosTile){
-        int supplypoints = 0;
-        int minospoints = 0;
-        int wallpoints = 0;
-        switch( dice){
+    int[] move(int id, int minosTile) {
+        
+    	int bestMove = getNextMove( id, minosTile);
+        switch (bestMove) {
             case 0:
-                if( board.tiles[currentPos].isUp()){
-                    wallpoints += 10;
-                    break;
-                }
-                for( int i = 0; i < board.getS(); i++){
-                    if( board.supplies[i].getSupplyTileId() == currentPos + board.getN()){
-                        supplypoints += 3;
-                    }
-                    if( !board.tiles[currentPos + board.getN()].isUp()){
-                        if( board.supplies[i].getSupplyTileId() == currentPos + 2 * board.getN()){
-                            supplypoints += 2;
-                        }
-                        if(!board.tiles[currentPos + 2 * board.getN()].isUp()) {
-                        	if( board.supplies[i].getSupplyTileId() == currentPos + 2 * board.getN()){
-                                supplypoints += 1;
-                            }
-                        }
-                    }
-                }
-                if( currentPos + board.getN() == minosTile){
-                    minospoints += 5;
-                }
-                if(!board.tiles[currentPos + board.getN()].isUp()) {
-                	if( currentPos + 2 * board.getN() == minosTile) {
-                		minospoints += 3;
-                	}
-                	if( !board.tiles[currentPos + 2 * board.getN()].isUp()) {
-                		if( currentPos + 2 * board.getN() == minosTile) {
-                    		minospoints += 1;
-                    	}
-                	}
-                }
-            break;
-
-            case 1:
-                if( board.tiles[currentPos].isRight()){
-                    wallpoints +=10;
-                    break;
-                }
-                for( int i = 0; i < board.getS(); i++){
-                    if( board.supplies[i].getSupplyTileId() == currentPos + 1){
-                        supplypoints += 2;
-                    }
-                    if( !board.tiles[currentPos + 1].isRight()){
-                        if( board.supplies[i].getSupplyTileId() == currentPos + 2){
-                            supplypoints += 1;
-                        }
-                    }
-                }
-                if( currentPos + 1 == minosTile){
-                    minospoints += 5;
-                }
-                if( currentPos + 2 == minosTile) {
-                    minospoints += 3;
+                if (board.tiles[id].isUp()) {
+                    System.out.println("Tries to move up, hits a wall.");
+                } else {
+                    x++;
+                    tileid = x * board.getN() + y;
+                    System.out.println("Moves up.");
                 }
                 break;
-
+            case 1:
+                if (board.tiles[id].isRight()) {
+                    System.out.println("Tries to move right, hits a wall.");
+                } else {
+                    y++;
+                    tileid = x * board.getN() + y;
+                    System.out.println("Moves right.");
+                }
+                break;
             case 2:
-            	if( board.tiles[currentPos].isDown()){
-                    wallpoints += 10;
-                    break;
+                if (board.tiles[id].isDown()) {
+                    System.out.println("Tries to move down, hits a wall.");
+                } else {
+                    x--;
+                    tileid = x * board.getN() + y;
+                    System.out.println("Moves down.");
                 }
-                for( int i = 0; i < board.getS(); i++){
-                    if( board.supplies[i].getSupplyTileId() == currentPos - board.getN()){
-                        supplypoints += 3;
-                    }
-                    if( !board.tiles[currentPos - board.getN()].isUp()){
-                        if( board.supplies[i].getSupplyTileId() == currentPos - 2 * board.getN()){
-                            supplypoints += 2;
-                        }
-                        if(!board.tiles[currentPos - 2 * board.getN()].isUp()) {
-                        	if( board.supplies[i].getSupplyTileId() == currentPos - 2 * board.getN()){
-                                supplypoints += 1;
-                            }
-                        }
-                    }
-                }
-                if( currentPos - board.getN() == minosTile){
-                    minospoints += 5;
-                }
-                if(!board.tiles[currentPos - board.getN()].isUp()) {
-                	if( currentPos - 2 * board.getN() == minosTile) {
-                		minospoints += 3;
-                	}
-                	if( !board.tiles[currentPos - 2 * board.getN()].isUp()) {
-                		if( currentPos - 2 * board.getN() == minosTile) {
-                    		minospoints += 1;
-                    	}
-                	}
-                }
-            break;
-
+                break;
             case 3:
-                if( board.tiles[currentPos].isLeft()){
-                    wallpoints += 10;
-                    break;
-                }
-                for( int i = 0; i < board.getS(); i++){
-                    if( board.supplies[i].getSupplyTileId() == currentPos - 1){
-                        supplypoints += 2;
-                    }
-                    if( !board.tiles[currentPos - 1].isLeft()){
-                        if( board.supplies[i].getSupplyTileId() == currentPos - 2){
-                            supplypoints += 1;
-                        }
-                    }
-                }
-                if( currentPos - 1 == minosTile){
-                    minospoints += 5;
-                }
-                if( currentPos - 2 == minosTile) {
-                    minospoints += 3;
+                if (board.tiles[id].isLeft()) {
+                    System.out.println("Tries to move left, hits a wall.");
+                } else {
+                    y--;
+                    tileid = x * board.getN() + y;
+                    System.out.println("Moves left.");
                 }
                 break;
         }
-        return 3.5*supplypoints - 6.0*minospoints - 1000.0*wallpoints;
-    }*/
+        /*Checks if there is any supply on the tile where Thesseus is (with playerId = 1), and if there is any, 
+         * increases the score by one and changes the supply coordinates and Supply Tile Id to -1 and in that way 
+         * the supply is disappearing from the board*/
+        int Sid=-1; //the id of the supply
+        if (playerId == 1) {
+            for (int i = 0; i < board.getS(); i++) {
+                if (board.supplies[i].getSupplyTileId() == x * board.getN() + y) {
+                    Sid = board.supplies[i].getSupplyId();
+                    System.out.println("Collected supply No:" + Sid);
+                    board.supplies[i].setX(-1);
+                    board.supplies[i].setY(-1);
+                    board.supplies[i].setSupplyTileId(-1);
+                    score++;
+                }
+            }
+        }
+        int[] temp =  {x * board.getN() + y, x, y, Sid};
+        return temp;
+    }
     
-    
+    public void statistics() {
+    	int timesUp=0, timesRight=0, timesDown=0, timesLeft=0, suppliesCollected=0;
+    	for( int i=0; i< path.size(); i++ ) {
+    		System.out.println( "\nRound: " +i);
+    		switch( path.get(i)[0]) {
+    			case 0: 
+    				System.out.print("Player moved Up.");
+    				timesUp++;
+    				break;
+    			case 1:
+    				System.out.print("Player moved Right.");
+    				timesRight++;
+    				break;
+    			case 2:
+    				System.out.print("Player moved Down.");
+    				timesDown++;
+    				break;
+    			case 3:
+    				System.out.print("Player moved Left.");
+    				timesLeft++;
+    				break;
+    		}
+    		if( path.get(i)[1]==1) {
+    			suppliesCollected++;
+    			System.out.print(" He collected a supply. Supplies Collected: " + suppliesCollected + ".");
+    		}
+    		if( path.get(i)[2] == 0) {
+    			System.out.print(" But he can't spot a supply.");
+    		}
+    		else {
+    			System.out.print(" Closest supply is " + path.get(i)[2] + " tiles away.");
+    		}
+    		if( path.get(i)[3] == 0) {
+    			System.out.print(" He can't spot Minotauros.");
+    		}
+    		else {
+    			System.out.print(" Minotauros is " + path.get(i)[3] + " tiles away.");
+    		}
+    	}
+    	System.out.println("\nTimes the player moved up: " + timesUp);
+    	System.out.println("Times the player moved right: " + timesRight);
+    	System.out.println("Times the player moved down: " + timesDown);
+    	System.out.println("Times the player moved left: " + timesLeft);
+    }
+
+
 }
