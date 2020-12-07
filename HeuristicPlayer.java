@@ -72,9 +72,7 @@ public class HeuristicPlayer extends Player {
     		break;
     	case 2:
     		if( board.tiles[currentPos].isDown()) {
-    			if( n==1) {
-    				sum -=2;
-    			}
+    			sum -=2;
     			break;
     		}
     		for( int i=0; i<board.getS(); i++) {
