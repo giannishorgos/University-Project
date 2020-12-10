@@ -6,11 +6,12 @@ import java.util.Random;
 
 public class HeuristicPlayer extends Player {
     private ArrayList<Integer[]> path;
-    private int n;
-    private double movepoints;
-    private int[] supplydistance;
-    private int[] minosdistance;
+    private int n; // tiles away for the initial current position
+    private double movepoints; // the points he collects 
+    private int[] supplydistance; // is an array of 4 integers because holds the distance for supplies in the four directions 
+    private int[] minosdistance; // is an array of 4 integers because holds the distance for supplies in the four directions 
 
+	// constructors
     public HeuristicPlayer(){
         super();
         path = new ArrayList<Integer[]>();
@@ -26,11 +27,24 @@ public class HeuristicPlayer extends Player {
         supplydistance = new int[4];
         minosdistance = new int[4];
     }
-    
+	
+	/*
+	 * @description calculates the points as is at the current tile and calls recursively his self on the next tile with the 
+	 * 				same dice and increases the n by one. In that way, the function caluculates the points until n = 3, 3 tiles
+	 * 				away for the initial current position
+	 * 
+	 * @param	currentPos: the current position of the player
+	 * 			dice: the four directions 0: UP,  1: RIGHT 2: DOWN, 3: LEFT
+	 * 			minosTile: the tile ID of the tile where minotaurus is
+	 * 			n: tiles away for the initial current position
+	 * 
+	 * @return the points based on the supplies he founds, the distance for minotaurus and if there are walls along his way
+	 *
+	 */
     public double evaluate(int currentPos, int dice, int minosTile, int n) {
     	double sum = 0;
     	switch( dice){
-    	case 0:
+    	case 0: // UP
     		if( board.tiles[currentPos].isUp()) {
     				sum -=2;
     			break;
@@ -46,11 +60,16 @@ public class HeuristicPlayer extends Player {
     			minosdistance[dice] = n;
     		}
         	n++;
-        	if( n<4) {
-        		movepoints += evaluate( currentPos +  board.getN(), dice, minosTile, n) / (float)n;
-        	}
-    		break;
-    	case 1:
+			if( n<4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
+				
+				/* divides the points that collects with n (tiles away from the player) so player gets 
+				 * more points if the supply is near him and fewer if the supply is far away. After this
+				 * we add the points in the movepoints.
+				 */
+				movepoints += evaluate( currentPos +  board.getN(), dice, minosTile, n) / (float)n; 
+			}
+			break;
+    	case 1: // RIGHT
     		if( board.tiles[currentPos].isRight()) {
     			sum -=2;
     			break;
@@ -66,11 +85,16 @@ public class HeuristicPlayer extends Player {
     			minosdistance[dice] = n;
     		}
         	n++;
-        	if( n<4) {
+			if( n<4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
+				
+				/* divides the points that collects with n (tiles away from the player) so player gets 
+				 * more points if the supply is near him and fewer if the supply is far away. After this
+				 * we add the points in the movepoints.
+				 */
         		movepoints += evaluate( currentPos + 1, dice, minosTile, n) / (float)n;
         	}
     		break;
-    	case 2:
+    	case 2: //DOWN
     		if( board.tiles[currentPos].isDown()) {
     			sum -=2;
     			break;
@@ -86,11 +110,16 @@ public class HeuristicPlayer extends Player {
     			minosdistance[dice] = n;
     		}
         	n++;
-        	if( n<4) {
+			if(n<4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
+				
+				/* divides the points that collects with n (tiles away from the player) so player gets 
+				 * more points if the supply is near him and fewer if the supply is far away. After this
+				 * we add the points in the movepoints.
+				 */
         		movepoints += evaluate( currentPos -  board.getN(), dice, minosTile, n) / (float)n;
         	}
     		break;
-    	case 3:
+    	case 3: //LEFT
     		if( board.tiles[currentPos].isLeft()) {
     			sum -= 2;
     			break;
@@ -106,7 +135,12 @@ public class HeuristicPlayer extends Player {
     			minosdistance[dice] = n;
     		}
         	n++;
-        	if( n<4) {
+			if(n < 4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
+				
+				/* divides the points that collects with n (tiles away from the player) so player gets 
+				 * more points if the supply is near him and fewer if the supply is far away. After this
+				 * we add the points in the movepoints.
+				 */
         		movepoints += evaluate( currentPos - 1, dice, minosTile, n) / (float)n;
         	}
     		break;
@@ -114,21 +148,33 @@ public class HeuristicPlayer extends Player {
     	} 
     	return sum + movepoints;
     }
-    
+	/*
+	 * @description this functions calls the evaluate for all four directions and saves the results in a map.
+	 * 				Then finds the biggest value in the map and return the direction that corresponds with the biggest value
+	 * 
+	 * @param	currentPos: the current position of the player
+	 * 			minosTile: the tile ID of the tile where minotaurus is
+	 * 
+	 * @return an integer for 0 to 3 which corresponds to the four directions 0: UP, 1: RIGHT, 2: DOWN, 3: LEFT
+	 */
     public int getNextMove(int currentPos, int minosTile) {
     	Map <String, Double> availableMoves = new HashMap<String, Double>();
     	
-    	movepoints = 0;
+		movepoints = 0; // erase the previous values for movepoints
+		clearArray();
     	availableMoves.put("Up", evaluate(currentPos, 0, minosTile, 1));
-    	movepoints = 0;
+		movepoints = 0;
+		clearArray();
     	availableMoves.put("Right", evaluate(currentPos, 1, minosTile, 1));
-    	movepoints = 0;
+		movepoints = 0;
+		clearArray();
     	availableMoves.put("Down", evaluate(currentPos, 2, minosTile, 1));
-    	movepoints = 0;
+		movepoints = 0;
+		clearArray();
     	availableMoves.put("Left", evaluate(currentPos, 3, minosTile, 1));
     	
-    	//checks if the smae as last move
-    	if( path.size()!=0) {
+    	// checks if the same as last move and if it is, decreases the points in that direction so the player avoid to go in that direction again
+    	if( path.size() != 0) {
     		switch( path.get(path.size() -1)[0]) {
     		case 0:
     			availableMoves.replace("Down", availableMoves.get("Down"), availableMoves.get("Down") -1);
@@ -145,22 +191,18 @@ public class HeuristicPlayer extends Player {
     		}
     	}
     	
-    	System.out.println( "~~~~~~Up value: " + availableMoves.get("Up"));
-    	System.out.println( "~~~~~~Right value: " + availableMoves.get("Right"));
-    	System.out.println( "~~~~~~Donw value: " + availableMoves.get("Down"));
-    	System.out.println( "~~~~~~Left value: " + availableMoves.get("Left"));
-    	
-    	
-    	
+
     	double max=-99999;
-    	String key = "";
+		String key = "";
+		// finds the max value in the map
     	for( String srt: availableMoves.keySet()) {
     		if( availableMoves.get(srt) > max) {
     			max = availableMoves.get(srt);
     			key = srt;
     		}
     	}
-    	
+		
+		// return an integer that corresponds with the directions with the biggest value
     	switch( key){
     		case "Up":
     			path.add(new Integer[] { 0, supplydistance[0]==1 ? 1 : 0, supplydistance[0], minosdistance[0]});
@@ -177,7 +219,16 @@ public class HeuristicPlayer extends Player {
     	}
     	
     }
-    
+	
+	/*
+     * @description: in that functions the players are moving randomly
+     * 
+     * @param 	id: the current Tile Id of the tile where the player is
+	 * 			minosTile: the tile ID of the tile where minotaurus is
+     * 
+     * @return: an array of integers who contains, the new tileId where the player is moved, the x,y coordinates
+     *  of the player and the supplyId of the supply that Thessus collected or -1 if there isn't any supply collected
+     */
     int[] move(int id, int minosTile) {
         
     	int bestMove = getNextMove( id, minosTile);
@@ -238,7 +289,12 @@ public class HeuristicPlayer extends Player {
         int[] temp =  {x * board.getN() + y, x, y, Sid};
         return temp;
     }
-    
+	
+	/*
+	 * @description	when the game finishes, print a resume of the player's moves that contains
+	 * 				the direction of the move, if he collects a supply, the distance for supplies or the Minotaurus
+	 * 				and the totals supplies he collects, all that for every round
+	 */
     public void statistics() {
     	int timesUp=0, timesRight=0, timesDown=0, timesLeft=0, suppliesCollected=0;
     	for( int i=0; i< path.size(); i++ ) {
@@ -261,7 +317,7 @@ public class HeuristicPlayer extends Player {
     				timesLeft++;
     				break;
     		}
-    		if( path.get(i)[1]==1) {
+    		if( path.get(i)[1] == 1) {
     			suppliesCollected++;
     			System.out.print(" He collected a supply. Supplies Collected: " + suppliesCollected + ".");
     		}
@@ -282,7 +338,14 @@ public class HeuristicPlayer extends Player {
     	System.out.println("Times the player moved right: " + timesRight);
     	System.out.println("Times the player moved down: " + timesDown);
     	System.out.println("Times the player moved left: " + timesLeft);
-    }
-
-
+	}
+	
+	/*
+	 * @description clears the arrays supplydistance and minosdistance from previous values
+	 */
+	public void clearArray() {
+		for(int i = 0; i < 4; i++) {
+			supplydistance[i] = 0;
+			minosdistance[i] = 0;
+		}
 }
