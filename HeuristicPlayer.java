@@ -2,11 +2,9 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 public class HeuristicPlayer extends Player {
     private ArrayList<Integer[]> path;
-    private int n; // tiles away for the initial current position
     private double movepoints; // the points he collects 
     private int[] supplydistance; // is an array of 4 integers because holds the distance for supplies in the four directions 
     private int[] minosdistance; // is an array of 4 integers because holds the distance for supplies in the four directions 
@@ -161,16 +159,12 @@ public class HeuristicPlayer extends Player {
     	Map <String, Double> availableMoves = new HashMap<String, Double>();
     	
 		movepoints = 0; // erase the previous values for movepoints
-		clearArray();
     	availableMoves.put("Up", evaluate(currentPos, 0, minosTile, 1));
 		movepoints = 0;
-		clearArray();
     	availableMoves.put("Right", evaluate(currentPos, 1, minosTile, 1));
 		movepoints = 0;
-		clearArray();
     	availableMoves.put("Down", evaluate(currentPos, 2, minosTile, 1));
 		movepoints = 0;
-		clearArray();
     	availableMoves.put("Left", evaluate(currentPos, 3, minosTile, 1));
     	
     	// checks if the same as last move and if it is, decreases the points in that direction so the player avoid to go in that direction again
@@ -190,7 +184,7 @@ public class HeuristicPlayer extends Player {
     			break;
     		}
     	}
-    	
+    	 	
 
     	double max=-99999;
 		String key = "";
@@ -206,15 +200,19 @@ public class HeuristicPlayer extends Player {
     	switch( key){
     		case "Up":
     			path.add(new Integer[] { 0, supplydistance[0]==1 ? 1 : 0, supplydistance[0], minosdistance[0]});
+    			clearArray();
     			return 0;
     		case "Right":
     			path.add(new Integer[] { 1, supplydistance[1]==1 ? 1 : 0, supplydistance[1], minosdistance[1]});
+    			clearArray();
     			return 1;
     		case "Down":
     			path.add(new Integer[] { 2, supplydistance[2]==1 ? 1 : 0, supplydistance[2], minosdistance[2]});
+    			clearArray();
     			return 2;
     		default:
     			path.add(new Integer[] { 3, supplydistance[3]==1 ? 1 : 0, supplydistance[3], minosdistance[3]});
+    			clearArray();
 				return 3;
     	}
     	
@@ -348,4 +346,5 @@ public class HeuristicPlayer extends Player {
 			supplydistance[i] = 0;
 			minosdistance[i] = 0;
 		}
+	}
 }
