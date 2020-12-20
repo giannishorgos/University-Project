@@ -10,6 +10,7 @@ public class Node {
 
     public Node() {
         parent = null;
+        children = new ArrayList<Node>();
         nodeEvaluation = 0;
         nodeDepth = 0;
         nodeMove = new int[3];
@@ -17,6 +18,7 @@ public class Node {
 
     public Node(Node parent, Board nodeBoard, int x, int y, int dice) {
         this.parent = parent;
+        children = new ArrayList<Node>();
         this.nodeBoard = nodeBoard;
         nodeMove = new int[] {x, y, dice};
 
