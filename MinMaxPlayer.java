@@ -2,7 +2,8 @@ import java.util.ArrayList;
 
 public class MinMaxPlayer extends Player {
 	private ArrayList<Integer[]> path;
-    private double movepoints; // the points he collects 
+    private double movepointsT;// the points he collects
+    private double movepointsM;
     private int[] supplydistance; // is an array of 4 integers because holds the distance for supplies in the four directions 
     private int[] enemydistance; // is an array of 4 integers because holds the distance for supplies in the four directions 
 
@@ -10,7 +11,8 @@ public class MinMaxPlayer extends Player {
     public MinMaxPlayer(){
         super();
         path = new ArrayList<Integer[]>();
-        movepoints = 0;
+        movepointsT = 0;
+        movepointsM = 0;
         supplydistance = new int[4];
         enemydistance = new int[4];
     }
@@ -18,12 +20,16 @@ public class MinMaxPlayer extends Player {
     public MinMaxPlayer(int playerId, String name, Board board, int score, int x, int y) {
     	super( playerId, name, board, score, x, y);
     	path = new ArrayList<Integer[]>();
-        movepoints = 0;
+        movepointsT = 0;
+        movepointsM = 0;
         supplydistance = new int[4];
         enemydistance = new int[4];
     }
     
     public double evaluateT(int currentPos, int dice, int minosTile, int n) {
+    	if( n == 1) {
+    		movepointsT = 0;
+    	}
     	double sum = 0;
     	switch( dice){
     	case 0: // UP
@@ -51,7 +57,7 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-				movepoints += evaluateT( currentPos +  board.getN(), dice, minosTile, n) / (float)n; 
+				movepointsT += evaluateT( currentPos +  board.getN(), dice, minosTile, n) / (float)n; 
 			}
 			break;
     	case 1: // RIGHT
@@ -79,7 +85,7 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-        		movepoints += evaluateT( currentPos + 1, dice, minosTile, n) / (float)n;
+        		movepointsT += evaluateT( currentPos + 1, dice, minosTile, n) / (float)n;
         	}
     		break;
     	case 2: //DOWN
@@ -107,7 +113,7 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-        		movepoints += evaluateT( currentPos -  board.getN(), dice, minosTile, n) / (float)n;
+        		movepointsT += evaluateT( currentPos -  board.getN(), dice, minosTile, n) / (float)n;
         	}
     		break;
     	case 3: //LEFT
@@ -135,15 +141,18 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-        		movepoints += evaluateT( currentPos - 1, dice, minosTile, n) / (float)n;
+        		movepointsT += evaluateT( currentPos - 1, dice, minosTile, n) / (float)n;
         	}
     		break;
     		
     	} 
-    	return sum + movepoints;
+    	return sum + movepointsT;
     }
     
     public double evaluateM(int currentPos, int dice, int ThesseusTile, int n) {
+    	if( n ==1) {
+    		movepointsM = 0;
+    	}
     	double sum = 0;
     	switch( dice){
     	case 0: // UP
@@ -157,12 +166,10 @@ public class MinMaxPlayer extends Player {
     		for( int i=0; i<board.getS(); i++) {
     			if( board.supplies[i].getSupplyTileId() == currentPos + board.getN()) {
     				sum += 1;
-    				supplydistance[dice] = n;
     			}
     		}
     		if( ThesseusTile == currentPos + board.getN()) {
     			sum += 10;
-    			enemydistance[dice] = n;
     		}
         	n++;
 			if( n<4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
@@ -171,7 +178,7 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-				movepoints += evaluateM( currentPos +  board.getN(), dice, ThesseusTile, n) / (float)n; 
+				movepointsM += evaluateM( currentPos +  board.getN(), dice, ThesseusTile, n) / (float)n; 
 			}
 			break;
     	case 1: // RIGHT
@@ -185,12 +192,10 @@ public class MinMaxPlayer extends Player {
     		for( int i=0; i<board.getS(); i++) {
     			if( board.supplies[i].getSupplyTileId() == currentPos + 1) {
     				sum += 1;
-    				supplydistance[dice] = n;
     			}
     		}
     		if( ThesseusTile == currentPos + 1) {
     			sum += 10;
-    			enemydistance[dice] = n;
     		}
         	n++;
 			if( n<4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
@@ -199,7 +204,7 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-        		movepoints += evaluateM( currentPos + 1, dice, ThesseusTile, n) / (float)n;
+        		movepointsM += evaluateM( currentPos + 1, dice, ThesseusTile, n) / (float)n;
         	}
     		break;
     	case 2: //DOWN
@@ -213,12 +218,10 @@ public class MinMaxPlayer extends Player {
     		for( int i=0; i<board.getS(); i++) {
     			if( board.supplies[i].getSupplyTileId() == currentPos - board.getN()) {
     				sum += 1;
-    				supplydistance[dice] = n;
     			}
     		}
     		if( ThesseusTile == currentPos - board.getN()) {
     			sum += 10;
-    			enemydistance[dice] = n;
     		}
         	n++;
 			if(n<4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
@@ -227,7 +230,7 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-        		movepoints += evaluateM( currentPos -  board.getN(), dice, ThesseusTile, n) / (float)n;
+        		movepointsM += evaluateM( currentPos -  board.getN(), dice, ThesseusTile, n) / (float)n;
         	}
     		break;
     	case 3: //LEFT
@@ -241,12 +244,10 @@ public class MinMaxPlayer extends Player {
     		for( int i=0; i<board.getS(); i++) {
     			if( board.supplies[i].getSupplyTileId() == currentPos - 1) {
     				sum += 1;
-    				supplydistance[dice] = n;
     			}
     		}
     		if( ThesseusTile == currentPos - 1) {
     			sum += 10;
-    			enemydistance[dice] = n;
     		}
         	n++;
 			if(n < 4) { // n can gets values from 1 to 3 cause the player can see only 3 tiles ahead from him
@@ -255,22 +256,24 @@ public class MinMaxPlayer extends Player {
 				 * more points if the supply is near him and fewer if the supply is far away. After this
 				 * we add the points in the movepoints.
 				 */
-        		movepoints += evaluateM( currentPos - 1, dice, ThesseusTile, n) / (float)n;
+        		movepointsM += evaluateM( currentPos - 1, dice, ThesseusTile, n) / (float)n;
         	}
     		break;
     		
     	} 
-    	return sum + movepoints;
+    	return sum + movepointsM;
     }
     
     public int chooseMinMaxMove(Node root, int currentPos, int opponentCurrentPos) {
-    	double bestMinosValue=-100.0;
+    	double bestMinosValue=Double.NEGATIVE_INFINITY;
     	int bestMinosMove= -1;
     	
-    	double bestValue=-100;
+    	double bestValue=Double.NEGATIVE_INFINITY;
     	int bestMove= -1;
     	
     	for( int i=0; i< root.children.size(); i++) {
+    		bestMinosValue = Double.NEGATIVE_INFINITY;
+    		bestMinosMove = -1;
     		for( int j=0; j< root.children.get(i).children.size(); j++) {
     			if( root.children.get(i).children.get(j).getNodeEvaluation() > bestMinosValue) {
     				bestMinosValue = root.children.get(i).children.get(j).getNodeEvaluation();
@@ -297,13 +300,81 @@ public class MinMaxPlayer extends Player {
     			bestMove= root.children.get(i).getNodeMove()[2];
     		}
     	}
+    	System.out.println("Best T: " + bestMove + " Best M: " + bestMinosMove);
     	return bestMove;
 	}
     
     public int[] getNextMove (int currentPos, int opponentCurrentPos) {
     	Node root = new Node();
     	createMySubTree( currentPos, opponentCurrentPos, root, 1);
-    	chooseMinMaxMove( root, currentPos, opponentCurrentPos);
+    	int bestMove = chooseMinMaxMove( root, currentPos, opponentCurrentPos);
+    	
+    	
+    	
+        switch (bestMove) {
+        case 0:
+            if (board.tiles[currentPos].isUp()) {
+                System.out.println("Tries to move up, hits a wall.");
+            } else {
+                x++;
+                tileid = x * board.getN() + y;
+                System.out.println("Moves up.");
+            }
+            path.add(new Integer[] { 0, supplydistance[0]==1 ? 1 : 0, supplydistance[0], enemydistance[0]});
+            clearArray();
+            break;
+        case 1:
+            if (board.tiles[currentPos].isRight()) {
+                System.out.println("Tries to move right, hits a wall.");
+            } else {
+                y++;
+                tileid = x * board.getN() + y;
+                System.out.println("Moves right.");
+            }
+            path.add(new Integer[] { 1, supplydistance[1]==1 ? 1 : 0, supplydistance[1], enemydistance[1]});
+            clearArray();
+            break;
+        case 2:
+            if (board.tiles[currentPos].isDown()) {
+                System.out.println("Tries to move down, hits a wall.");
+            } else {
+                x--;
+                tileid = x * board.getN() + y;
+                System.out.println("Moves down.");
+            }
+            path.add(new Integer[] { 2, supplydistance[2]==1 ? 1 : 0, supplydistance[2], enemydistance[2]});
+            clearArray();
+            break;
+        case 3:
+            if (board.tiles[currentPos].isLeft()) {
+                System.out.println("Tries to move left, hits a wall.");
+            } else {
+                y--;
+                tileid = x * board.getN() + y;
+                System.out.println("Moves left.");
+            }
+            path.add(new Integer[] { 3, supplydistance[3]==1 ? 1 : 0, supplydistance[3], enemydistance[3]});
+            clearArray();
+            break;
+        }
+        /*Checks if there is any supply on the tile where Thesseus is (with playerId = 1), and if there is any, 
+         * increases the score by one and changes the supply coordinates and Supply Tile Id to -1 and in that way 
+         * the supply is disappearing from the board*/
+        int Sid=-1; //the id of the supply
+	    if (playerId == 1) {
+	        for (int i = 0; i < board.getS(); i++) {
+	            if (board.supplies[i].getSupplyTileId() == x * board.getN() + y) {
+	                Sid = board.supplies[i].getSupplyId();
+	                System.out.println("Collected supply No:" + Sid);
+	                board.supplies[i].setX(-1);
+	                board.supplies[i].setY(-1);
+	                board.supplies[i].setSupplyTileId(-1);
+	                score++;
+	            }
+	        }
+	    }
+    	int[] temp =  {x * board.getN() + y, x, y, Sid};
+    	return temp;
     }
 
     
@@ -469,4 +540,66 @@ public class MinMaxPlayer extends Player {
 			break;
 		}
 	}
+	
+	/*
+	 * @description	when the game finishes, print a resume of the player's moves that contains
+	 * 				the direction of the move, if he collects a supply, the distance for supplies or the Minotaurus
+	 * 				and the totals supplies he collects, all that for every round
+	 */
+	
+    public void statistics() {
+    	int timesUp=0, timesRight=0, timesDown=0, timesLeft=0, suppliesCollected=0;
+    	for( int i=0; i< path.size(); i++ ) {
+    		System.out.println( "\nRound: " +i);
+    		switch( path.get(i)[0]) {
+    			case 0: 
+    				System.out.print("Player moved Up.");
+    				timesUp++;
+    				break;
+    			case 1:
+    				System.out.print("Player moved Right.");
+    				timesRight++;
+    				break;
+    			case 2:
+    				System.out.print("Player moved Down.");
+    				timesDown++;
+    				break;
+    			case 3:
+    				System.out.print("Player moved Left.");
+    				timesLeft++;
+    				break;
+    		}
+    		if( path.get(i)[1] == 1) {
+    			suppliesCollected++;
+    			System.out.print(" He collected a supply. Supplies Collected: " + suppliesCollected + ".");
+    		}
+    		if( path.get(i)[2] == 0) {
+    			System.out.print(" But he can't spot a supply.");
+    		}
+    		else {
+    			System.out.print(" Closest supply is " + path.get(i)[2] + " tiles away.");
+    		}
+    		if( path.get(i)[3] == 0) {
+    			System.out.print(" He can't spot Minotauros.");
+    		}
+    		else {
+    			System.out.print(" Minotauros is " + path.get(i)[3] + " tiles away.");
+    		}
+    	}
+    	System.out.println("\nTimes the player moved up: " + timesUp);
+    	System.out.println("Times the player moved right: " + timesRight);
+    	System.out.println("Times the player moved down: " + timesDown);
+    	System.out.println("Times the player moved left: " + timesLeft);
+	}
+    
+	/*
+	 * @description clears the arrays supplydistance and minosdistance from previous values
+	 */
+	public void clearArray() {
+		for(int i = 0; i < 4; i++) {
+			supplydistance[i] = 0;
+			enemydistance[i] = 0;
+		}
+	}
+
 }
