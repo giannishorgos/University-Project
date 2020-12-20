@@ -11,8 +11,8 @@
  *
  */
 
-package erga1;
-import erga1.*;
+//import Player;
+
 
 public class Game {
 	//variables
@@ -39,7 +39,7 @@ public class Game {
         board.createBoard();
         
         //creates the 2 players
-        HeuristicPlayer Thesseus = new HeuristicPlayer(1, "Thesseus", board, 0, 0, 0);
+        MinMaxPlayer Thesseus = new MinMaxPlayer(1, "Thesseus", board, 0, 0, 0);
         Player Minotauros = new Player(2, "Minotauros", board, 0, N / 2, N / 2);
         
         //prints the board before any move
@@ -63,7 +63,7 @@ public class Game {
             System.out.println("Round: " + round++);
 
             System.out.print("Thesseus: ");
-            Thesseus.move(Thesseus.getTileId(), Minotauros.getTileId()); //Thesseus move
+            Thesseus.getNextMove(Thesseus.getTileId(), Minotauros.getTileId()); //Thesseus move
             if(Thesseus.getTileId() == Minotauros.getTileId()) { //checks if Minotauros wins
             	minoWins = true;
             }
